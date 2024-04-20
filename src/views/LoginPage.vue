@@ -75,7 +75,7 @@ const doLogin = async () => {
 <template>
   <v-container class="fill-height justify-center">
     <v-card max-width="300px">
-      <v-card-title class="bg-wrDarkGreen">Zeitnahme-PIN eingeben</v-card-title>
+      <v-card-title class="bg-wrDarkGreen">TIMER-PIN eingeben</v-card-title>
       <v-card-text class="mt-4 pb-0">
         <v-row align-center>
           <v-col v-for="d in digits" :key="d" class="text-center">
