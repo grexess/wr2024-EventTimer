@@ -30,7 +30,7 @@
     "@vitejs/plugin-vue": "^5",
     "@vue/test-utils": "^2.4.3",
     "happy-dom": "^13",
-    "vite": "^5",
+    "vite": "5.2.10",
     "vitest": "^1"
   }
 }

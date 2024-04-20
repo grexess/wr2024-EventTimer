@@ -17,7 +17,7 @@ const imageHost = import.meta.env.VITE_APP_IMAGE_SERVER;
 const origin = new URL(window.location.href).origin;
 
 import AGB from "@/components/framework/AGB.vue";
-import Datenschutz from "@/components/framework/Datenschutz.vue";
+import Datenschutz from "@/components/framework/DatenSchutz.vue";
 
 const agb = ref(null);
 const datenschutz = ref(null);
