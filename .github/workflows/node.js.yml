@@ -40,12 +40,12 @@ jobs:
           dist
 
     - name: copy to cloudfunctions repository
-      uses: dmnemec/copy_file_to_another_repo_action@TEST-DEPLOY
+      uses: dmnemec/copy_file_to_another_repo_action@main
       env:
         API_TOKEN_GITHUB: ${{ secrets.ACCESS_TOKEN }}
       with:
         source_file: 'dist/'
-        destination_repo: 'Team-WeRace/WR-CloudFunctions'
+        destination_repo: 'Team-WeRace/WR-CloudFunctions@TEST-DEPLOY'
         destination_folder: 'public/timer/'
         user_email: 'kopfan@posteo.de'
         user_name: 'kopfan'
