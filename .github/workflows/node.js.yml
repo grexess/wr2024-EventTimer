@@ -1,14 +1,14 @@
 name: Node.js CI
 
+on:
+  push:
+    branches: [ "TEST-DEPLOY" ]
+  pull_request:
+    branches: [ "TEST-DEPLOY" ]
+    
 env:
   SOURCE_BRANCH: TEST-DEPLOY
   TARGET_BRANCH: TEST-DEPLOY
-
-on:
-  push:
-    branches: [ "$SOURCE_BRANCH" ]
-  pull_request:
-    branches: [ "$SOURCE_BRANCH" ]
 
 jobs:
   build:
