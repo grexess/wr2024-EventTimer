@@ -6,9 +6,9 @@ env:
 
 on:
   push:
-    branches: [ $SOURCE_BRANCH ]
+    branches: [ "$SOURCE_BRANCH" ]
   pull_request:
-    branches: [ $SOURCE_BRANCH ]
+    branches: [ "$SOURCE_BRANCH" ]
 
 jobs:
   build:
@@ -47,7 +47,7 @@ jobs:
       with:
         source_file: 'dist/'
         destination_repo: 'Team-WeRace/WR-CloudFunctions'
-        destination_branch: $TARGET_BRANCH
+        destination_branch: '$TARGET_BRANCH'
         destination_folder: 'public/timer/'
         user_email: 'kopfan@posteo.de'
         user_name: 'kopfan'
