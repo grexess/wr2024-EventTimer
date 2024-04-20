@@ -9,7 +9,7 @@ const timerStore = useTimerStore();
   <div>
     <v-app-bar :elevation="4">
       <v-app-bar-nav-icon icon="mdi-arrow-left-bold" to="/"></v-app-bar-nav-icon>
-      TestPage
+      TestPage V1
     </v-app-bar>
     <v-container class="fill-height justify-center">
       <!-- <v-select v-model="timerStore.mode" :items="timerStore.getModes" density="compact" label="Compact"></v-select> -->
