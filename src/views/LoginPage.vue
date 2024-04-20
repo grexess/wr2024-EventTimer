@@ -106,4 +106,7 @@ const doLogin = async () => {
 .centered-input :deep(input) {
   text-align: center;
 }
+.test-class {
+  color: red; 
+}
 </style>
