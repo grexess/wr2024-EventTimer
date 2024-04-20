@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "PreRelease-001" ]
+    branches: [ "TEST-DEPLOY" ]
   pull_request:
-    branches: [ "PreRelease-001" ]
+    branches: [ "TEST-DEPLOY" ]
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
           dist
 
     - name: copy to cloudfunctions repository
-      uses: dmnemec/copy_file_to_another_repo_action@main
+      uses: dmnemec/copy_file_to_another_repo_action@TEST-DEPLOY
       env:
         API_TOKEN_GITHUB: ${{ secrets.ACCESS_TOKEN }}
       with:
