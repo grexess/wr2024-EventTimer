@@ -493,14 +493,14 @@ const getFooterButtons = () => {
                       v-bind="props"
                       color="grey"
                       variant="plain"
-                      :href="`${origin}/timer#/popup/results/${popupData.id}`"
+                      :href="`${origin}/#/Popups/${popupData.id}`"
                       target="_blank"
                     >
                     </v-btn>
                   </template> </v-tooltip
               ></v-col>
               <v-col class="my-1 white text-disabled elevation-2 rounded" style="font-size: 0.7em">{{
-                `${origin}/timer#/popup/results/${popupData.id}`
+                `${origin}/#/Popups/${popupData.id}`
               }}</v-col>
             </v-row>
 
@@ -515,15 +515,13 @@ const getFooterButtons = () => {
                       v-bind="props"
                       color="grey"
                       variant="plain"
-                      :href="`${origin}/timer#/popup/timer`"
+                      :href="`${origin}/timer`"
                       target="_blank"
                     >
                     </v-btn>
                   </template> </v-tooltip
               ></v-col>
-              <v-col class="my-1 white text-disabled elevation-2 rounded" style="font-size: 0.7em"
-                >{{ `${origin}/timer#/popup/timer` }}
-              </v-col>
+              <v-col class="my-1 white text-disabled elevation-2 rounded" style="font-size: 0.7em">{{ `${origin}/timer` }} </v-col>
             </v-row>
 
             <div style="font-size: 0.8em" class="pa-2 text-disabled text-center">
