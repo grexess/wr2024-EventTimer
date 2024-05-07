@@ -1,0 +1,53 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "PreRelease-001" ]
+  pull_request:
+    branches: [ "PreRelease-001" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: PreRelease-001
+    - name: install node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18 
+
+    - name: install dependencies 
+      run: npm ci
+
+    - name: install rollup
+      run: npm i rollup
+    
+    - name: build
+      run: npm run build
+
+    - name: upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: werace-timer
+        path:
+          dist
+
+    - name: copy to cloudfunctions repository
+      uses: dmnemec/copy_file_to_another_repo_action@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.ACCESS_TOKEN }}
+      with:
+        source_file: 'dist/'
+        destination_repo: 'Team-WeRace/WR-CloudFunctions'
+        destination_folder: 'public/timer/'
+        user_email: 'kopfan@posteo.de'
+        user_name: 'kopfan'
+        commit_message: 'deployment pipeline from WR-Timer'
+        use_rsync: true
