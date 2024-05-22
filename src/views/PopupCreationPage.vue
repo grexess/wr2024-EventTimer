@@ -122,7 +122,6 @@ const doPayment = async (v) => {
 
     loading.value = true;
     try {
-      debugger;
       popupData = await Parse.Cloud.run("createPopup", { data });
     } catch (error) {
       switch (error.code) {

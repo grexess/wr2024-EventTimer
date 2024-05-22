@@ -63,13 +63,15 @@ const getTargetLabel = () => {
         <div class="text-h6">{{ timerStore.getEventName }}</div>
         <v-divider class="d-none d-sm-flex" />
         <div class="d-none d-sm-flex">
+          <!--
           <div v-if="!timerStore.isPopup">
+             trycount info on header 
             <b>{{ timerStore.user?.usertype?.stage }}</b> ({{ timerStore.user?.usertype?.stageTryCount }} Versuch{{
               timerStore.user?.usertype?.stageTryCount > 1 ? "e" : ""
             }}
             je Starter) | {{ getTargetLabel() }}
-          </div>
-          <div v-else>{{ getTargetLabel() }}</div>
+          </div>-->
+          <div>{{ getTargetLabel() }}</div>
         </div>
       </div>
       <v-menu transition="scale-transition">
@@ -81,10 +83,10 @@ const getTargetLabel = () => {
             <v-list-item-subtitle>Stage</v-list-item-subtitle>
             <v-list-item-title>{{ timerStore.user?.usertype?.stage }}</v-list-item-title>
           </v-list-item>
-          <v-list-item v-if="!timerStore.isPopup">
+          <!-- <v-list-item v-if="!timerStore.isPopup">
             <v-list-item-subtitle>Versuche je Starter</v-list-item-subtitle>
             <v-list-item-title>{{ timerStore.user?.usertype?.stageTryCount }}</v-list-item-title>
-          </v-list-item>
+          </v-list-item> -->
           <v-list-item v-if="!timerStore.isPopup">
             <v-list-item-subtitle>Stage-Typ</v-list-item-subtitle>
             <v-list-item-title>{{ getTargetLabel() }}</v-list-item-title>

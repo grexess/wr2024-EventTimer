@@ -64,6 +64,7 @@ export const useTimerStore = defineStore({
               query: { [DB.CLASS_FIELD_EVENTID]: eventId, [DB.CLASS_FIELD_STAGE]: stageName },
               select: [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME],
             });
+
             const startNumbers = await getParseObject(DB.CLASS_EVENT, eventId, [DB.CLASS_ARRAY_REGISTRANTS]);
             this.starters = startNumbers.get(DB.CLASS_ARRAY_REGISTRANTS);
             break;
@@ -168,16 +169,17 @@ export const useTimerStore = defineStore({
       const _user = await Parse.User.logIn(pin, pin);
 
       //WR_EVENT requires a stageTryCount
-      if (this.isEvent && !this.user?.usertype.stageTryCount) throw new Error("TryCount not set, please contact your organizer!");
+      if (this.isEvent && !this.user?.usertype.stageMinTryCount && !this.user?.usertype.stageMaxTryCount)
+        throw new Error("TryCount information missing, please contact your organizer!");
 
       this.user = _user.toJSON();
       this.mode = this.user.usertype.mode;
 
       this.initSubscriptions(); // init parseClient for LiveQuery
 
-      const queryData = { eventId: this.user.usertype.id };
+      const queryData = { eventId: this.user.usertype.eventId };
       if (this.user.usertype.type === "event") {
-        queryData.stageName = this.user.usertype.stage;
+        queryData.stageName = this.user.usertype.stageName;
       }
 
       this.timeTableClassName = this.classNameMap[this.user.usertype.type].timeTableClass;
@@ -220,7 +222,7 @@ export const useTimerStore = defineStore({
       };
 
       if (this.user.usertype.type === "event") {
-        queryData.StageName = this.user.usertype.stage;
+        queryData.StageName = this.user.usertype.stageName;
       }
       const selectedFields = ["Target", "StageName"];
       try {
@@ -252,10 +254,11 @@ export const useTimerStore = defineStore({
      */
     async subscribeToTimeTableEntries() {
       const className = this.timeTableClassName;
-      const queryData = { EventId: this.user.usertype.id };
+      const queryData = { EventId: this.user.usertype.eventId };
       if (this.user.usertype.type === "event") {
-        queryData.Stage = this.user.usertype.stage;
+        queryData.Stage = this.user.usertype.stageName;
       }
+      debugger;
       const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
       const query = this.getQuery({ className, queryData, selectedFields });
       this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
@@ -285,6 +288,7 @@ export const useTimerStore = defineStore({
     async subscribeToSessionObserver() {
       const query = this.getSessionObserverQuery;
       this.sessionObserverSubscription = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+
       console.log("SessionObserver Subscription");
       this.sessionObserverSubscription.on("create", async (wrSess) => {
         // check if own session is taken over by another device
@@ -309,6 +313,7 @@ export const useTimerStore = defineStore({
       query.equalTo(DB.CLASS_FIELD_OBJECTID, this.user.usertype.eventId);
       query.select([DB.CLASS_ARRAY_REGISTRANTS]);
       this.starterNumberSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      debugger;
       this.starterNumberSubscription.on("update", (ev) => {
         this.starters = ev.get(DB.CLASS_ARRAY_REGISTRANTS);
       });
@@ -348,7 +353,10 @@ export const useTimerStore = defineStore({
       // return only startnumbers which have not passed the stageTryCount
       const availableStarters = startersNotOnStage.filter((sn) => {
         const finished = this.finishedStarter[sn]?.length || 0;
-        return finished < this.user.usertype.stageTryCount;
+        if (this.getTryCountMode !== "MIN") {
+          return finished < this.user.usertype.stageMaxTryCount;
+        }
+        return finished;
       });
 
       return availableStarters;
@@ -390,6 +398,16 @@ export const useTimerStore = defineStore({
       return this.user?.usertype.type === "event";
     },
 
+    getTryCountMode() {
+      if (this.user.usertype.stageMinTryCount === this.user.usertype.stageMaxTryCount) {
+        return "EXACT";
+      }
+      if (this.user.usertype.stageMaxTryCount === 0) {
+        return "MIN";
+      }
+      return "MINMAX";
+    },
+
     getEventName() {
       if (this.isEvent) {
         return this.user?.usertype.eventName;
@@ -424,7 +442,7 @@ export const useTimerStore = defineStore({
         WR_ID: this.user.usertype[this.getUserTypeEvent],
       };
       if (this.user.usertype.type === "event") {
-        queryData.StageName = this.user.usertype.stage;
+        queryData.StageName = this.user.usertype.stageName;
       }
       const selectedFields = ["Target", "StageName"];
       return this.getQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields });
