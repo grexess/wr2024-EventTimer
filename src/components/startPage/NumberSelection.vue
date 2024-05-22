@@ -24,7 +24,11 @@ watch(getStartNumbers, async (newStarterArray, oldStarterArray) => {
 
 const getTryCountText = (sn) => {
   const passedCount = Object.keys(timerStore.finishedStarter).filter((starter) => starter === sn).length;
-  return passedCount < timerStore.user.usertype.stageTryCount - 1 ? `${passedCount + 1}.Versuch` : "letzter Versuch";
+
+  if (timerStore.getTryCountMode === "MIN") {
+    return `${passedCount + 1}.Versuch`;
+  }
+  return passedCount < timerStore.user.usertype.stageMaxTryCount - 1 ? `${passedCount + 1}.Versuch` : "letzter Versuch";
 };
 
 const isAddStarterDisabled = () => {
@@ -87,8 +91,8 @@ const getRules = [
       </template>
       <template v-slot:item="{ props, item }">
         <v-list-item v-bind="props" :title="item.value" class="ma-4 text-wrDarkGreen font-weight-bold elevation-2">
-          <template v-if="timerStore.user.usertype.stageTryCount > 1" v-slot:append
-            ><span class="text-disabled" style="font-size: 0.8em"> {{ getTryCountText(item.value) }} </span></template
+          <template v-slot:append
+            ><span class="text-disabled" style="font-size: 0.8em">{{ getTryCountText(item.value) }} </span></template
           >
         </v-list-item>
       </template>
