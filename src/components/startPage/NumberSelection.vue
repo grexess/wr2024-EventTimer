@@ -23,12 +23,22 @@ watch(getStartNumbers, async (newStarterArray, oldStarterArray) => {
 });
 
 const getTryCountText = (sn) => {
-  const passedCount = Object.keys(timerStore.finishedStarter).filter((starter) => starter === sn).length;
+  // const passedCount = Object.keys(timerStore.finishedStarter).filter((starter) => starter === sn).length;
+  const passedCount = timerStore.finishedStarter[sn].length;
 
   if (timerStore.getTryCountMode === "MIN") {
     return `${passedCount + 1}.Versuch`;
   }
-  return passedCount < timerStore.user.usertype.stageMaxTryCount - 1 ? `${passedCount + 1}.Versuch` : "letzter Versuch";
+
+  if (passedCount === 0) return "1.Versuch";
+  if (passedCount === timerStore.user.usertype.stageMaxTryCount - 1) return "letzter Versuch";
+  if (passedCount === timerStore.user.usertype.stageMaxTryCount) return "kein Versuch mehr möglich";
+
+  return `${passedCount + 1}.Versuch`;
+};
+
+const isStarterDisabled = (sn) => {
+  return timerStore.finishedStarter[sn].length < timerStore.user.usertype.stageMaxTryCount ? false : true;
 };
 
 const isAddStarterDisabled = () => {
@@ -49,9 +59,11 @@ const getRules = [
 ];
 </script>
 <template>
-  <v-card v-if="timerStore.showCounterPartWarning" class="mx-auto bg-red-lighten-5 text-red" width="300" prepend-icon="mdi-timer-sand">
-    <template v-slot:title> Achtung </template>
-    <v-card-text class="text-center text-grey"> Bitte warten bis Gegenstelle für die Zeitnahme angemeldet ist </v-card-text>
+  <v-card v-if="timerStore.showCounterPartWarning" class="mx-auto elevation-4" width="400">
+    <v-card-title class="bgRed text-white"> <v-icon>mdi-timer-sand</v-icon>"Stage not ready"</v-card-title>
+    <v-card-text class="ma-2 text-center text-grey">
+      {{ `Bitte warten bis Zeitnehmer [${timerStore.isStart ? "Ziel" : "Start"}] angemeldet ist` }}
+    </v-card-text>
   </v-card>
 
   <v-sheet v-else class="elevation-0 align-center justify-center zRelative">
@@ -90,7 +102,12 @@ const getRules = [
         >
       </template>
       <template v-slot:item="{ props, item }">
-        <v-list-item v-bind="props" :title="item.value" class="ma-4 text-wrDarkGreen font-weight-bold elevation-2">
+        <v-list-item
+          v-bind="props"
+          :title="item.value"
+          class="ma-4 text-wrDarkGreen font-weight-bold elevation-2"
+          :disabled="isStarterDisabled(item.value)"
+        >
           <template v-slot:append
             ><span class="text-disabled" style="font-size: 0.8em">{{ getTryCountText(item.value) }} </span></template
           >
@@ -100,3 +117,10 @@ const getRules = [
     <v-snackbar v-model="snackbar" location="top" :timeout="1500" color="success" variant="tonal">Starterliste aktualisiert</v-snackbar>
   </v-sheet>
 </template>
+
+<style scoped>
+.bgRed {
+  background: rgb(241, 11, 11);
+  background: linear-gradient(173deg, rgba(241, 11, 11, 1) 0%, rgba(235, 222, 219, 1) 100%);
+}
+</style>
