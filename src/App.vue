@@ -71,6 +71,7 @@ const getTargetLabel = () => {
             }}
             je Starter) | {{ getTargetLabel() }}
           </div>-->
+          <div>{{ timerStore.getStageName }}:&nbsp;</div>
           <div>{{ getTargetLabel() }}</div>
         </div>
       </div>

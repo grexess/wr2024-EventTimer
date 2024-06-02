@@ -56,6 +56,12 @@ export const useTimerStore = defineStore({
               query: { [DB.CLASS_FIELD_POPUPID]: this.user.usertype.popupId },
               select: [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME],
             });
+            this.starters = Array.from(
+              entries.reduce((acc, cur) => {
+                acc.add(cur.get(DB.CLASS_FIELD_STARTNUMBER));
+                return acc;
+              }, new Set())
+            ).map((sn) => ({ [DB.REGISTRANT_FIELD_STARTNUMBER]: sn }));
             break;
           case "event":
             const { eventId, stageName } = this.user.usertype;
@@ -167,12 +173,16 @@ export const useTimerStore = defineStore({
 
     async login(pin) {
       const _user = await Parse.User.logIn(pin, pin);
+      this.user = _user.toJSON();
 
       //WR_EVENT requires a stageTryCount
       if (this.isEvent && !this.user?.usertype.stageMinTryCount && !this.user?.usertype.stageMaxTryCount)
         throw new Error("TryCount information missing, please contact your organizer!");
 
-      this.user = _user.toJSON();
+      if (this.isPopup) {
+        this.user.usertype.stageMaxTryCount = this.user.usertype.popupType === "free5x5" ? 5 : 1000;
+      }
+
       this.mode = this.user.usertype.mode;
 
       this.initSubscriptions(); // init parseClient for LiveQuery
@@ -258,7 +268,7 @@ export const useTimerStore = defineStore({
       if (this.user.usertype.type === "event") {
         queryData.Stage = this.user.usertype.stageName;
       }
-      debugger;
+
       const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
       const query = this.getQuery({ className, queryData, selectedFields });
       this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
@@ -313,7 +323,7 @@ export const useTimerStore = defineStore({
       query.equalTo(DB.CLASS_FIELD_OBJECTID, this.user.usertype.eventId);
       query.select([DB.CLASS_ARRAY_REGISTRANTS]);
       this.starterNumberSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
-      debugger;
+
       this.starterNumberSubscription.on("update", (ev) => {
         this.starters = ev.get(DB.CLASS_ARRAY_REGISTRANTS);
       });
@@ -416,6 +426,17 @@ export const useTimerStore = defineStore({
         return this.user?.usertype.popupName;
       }
       return "";
+    },
+
+    getStageName() {
+      if (this.isPopup) {
+        return undefined;
+      }
+      return this.user?.usertype.stageName;
+    },
+
+    isStart() {
+      return this.user?.usertype.target === "start";
     },
 
     requiresSubscriptions() {
