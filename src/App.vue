@@ -60,7 +60,7 @@ const getTargetLabel = () => {
     <v-app-bar :elevation="4" v-if="route.meta.showHeader">
       <v-app-bar-nav-icon @click.stop="timerStore.toggleNavDrawer()" color="teal-darken-2"></v-app-bar-nav-icon>
       <div class="text-caption text-teal-darken-2" v-if="timerStore.user">
-        <div class="text-h6">{{ timerStore.getEventName }}</div>
+        <div class="text-h6">{{ `${timerStore.isPopup ? "Popup - " : ""} ${timerStore.getEventName}` }}</div>
         <v-divider class="d-none d-sm-flex" />
         <div class="d-none d-sm-flex">
           <!--
@@ -71,7 +71,7 @@ const getTargetLabel = () => {
             }}
             je Starter) | {{ getTargetLabel() }}
           </div>-->
-          <div>{{ timerStore.getStageName }}:&nbsp;</div>
+          <div v-if="timerStore.isEvent">{{ timerStore.getStageName }}:&nbsp;</div>
           <div>{{ getTargetLabel() }}</div>
         </div>
       </div>

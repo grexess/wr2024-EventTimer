@@ -24,8 +24,7 @@ watch(getStartNumbers, async (newStarterArray, oldStarterArray) => {
 
 const getTryCountText = (sn) => {
   // const passedCount = Object.keys(timerStore.finishedStarter).filter((starter) => starter === sn).length;
-  const passedCount = timerStore.finishedStarter[sn].length;
-
+  const passedCount = timerStore.finishedStarter[sn] ? timerStore.finishedStarter[sn].length : 0;
   if (timerStore.getTryCountMode === "MIN") {
     return `${passedCount + 1}.Versuch`;
   }
@@ -38,10 +37,13 @@ const getTryCountText = (sn) => {
 };
 
 const isStarterDisabled = (sn) => {
-  return timerStore.finishedStarter[sn].length < timerStore.user.usertype.stageMaxTryCount ? false : true;
+  return timerStore.finishedStarter[sn] && timerStore.finishedStarter[sn].length >= timerStore.user.usertype.stageMaxTryCount;
 };
 
 const isAddStarterDisabled = () => {
+  if (timerStore.isEvent) {
+    return false;
+  }
   return timerStore.starters.length >= timerStore.getMaxStartNumber;
 };
 
@@ -67,6 +69,7 @@ const getRules = [
   </v-card>
 
   <v-sheet v-else class="elevation-0 align-center justify-center zRelative">
+    <div v-if="isAddStarterDisabled()" class="text-center text-red" style="font-size: 0.7em">Maximale Starterzahl erreicht</div>
     <v-select
       v-model="timerStore.selectedStarter"
       class="font-weight-bold"
@@ -81,7 +84,7 @@ const getRules = [
       <template v-slot:append v-if="timerStore.isPopup">
         <v-dialog v-model="addStartNumberDialog" persistent max-width="290">
           <template v-slot:activator="{ props }">
-            <v-btn icon v-bind="props" :disabled="isAddStarterDisabled()">
+            <v-btn icon v-bind="props" v-if="!isAddStarterDisabled()">
               <v-icon color="grey-darken-1" x-large> mdi-plus-box</v-icon></v-btn
             ></template
           ><v-card>

@@ -1,5 +1,5 @@
 <script setup>
-import { inject, computed } from "vue";
+import { inject } from "vue";
 const loadingComponent = inject("$LoadingComponent");
 const infoDialog = inject("$InfoDialog");
 import { useTimerStore } from "@/scripts/stores/index.js";

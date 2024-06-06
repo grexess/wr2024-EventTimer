@@ -162,8 +162,8 @@ export const useTimerStore = defineStore({
     },
 
     async stopSelectedStarter(sn) {
-      const entry = await updateParseObject(this.timeTableClassName, this.starterOnStage[sn], { [DB.CLASS_FIELD_FINISHTIME]: Date.now() });
-      this.finishedStarter[sn] = entry.id;
+      const time = await updateParseObject(this.timeTableClassName, this.starterOnStage[sn], { [DB.CLASS_FIELD_FINISHTIME]: Date.now() });
+      this.finishedStarter[sn] ? this.finishedStarter[sn].push(time.id) : (this.finishedStarter[sn] = [time.id]);
       delete this.starterOnStage[sn];
     },
 
@@ -224,6 +224,7 @@ export const useTimerStore = defineStore({
     },
 
     async checkForCounterpart() {
+      debugger;
       if (!this.user) return;
       const counterMode = this.user.usertype.mode === "MODE_ONLY_STARTTIME" ? "MODE_ONLY_STOPTIME" : "MODE_ONLY_STARTTIME";
       let queryData = {
@@ -296,6 +297,7 @@ export const useTimerStore = defineStore({
      *  MODE_ONLY_STOPTIME watches for state of start timekeeper
      */
     async subscribeToSessionObserver() {
+      debugger;
       const query = this.getSessionObserverQuery;
       this.sessionObserverSubscription = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
@@ -331,22 +333,25 @@ export const useTimerStore = defineStore({
 
     async initSubscriptions() {
       // init parseClient for LiveQuery
-      if (this.requiresSubscriptions || this.requiresStartNumberObserver) {
-        const LiveQueryClient = Parse.LiveQueryClient;
-        this.parseClient = new LiveQueryClient({
-          applicationId: import.meta.env.VITE_APP_PARSE_APP_ID,
-          serverURL: import.meta.env.VITE_APP_PARSE_WSS_URL,
-          javascriptKey: import.meta.env.VITE_APP__PARSE_JAVASCRIPT_ID,
-        });
-        this.parseClient.open();
-      }
-      if (this.requiresSubscriptions) {
-        await this.subscribeToSessionObserver();
-        await this.subscribeToTimeTableEntries();
-        // if subscription required also counterpart check is required
+
+      const LiveQueryClient = Parse.LiveQueryClient;
+      this.parseClient = new LiveQueryClient({
+        applicationId: import.meta.env.VITE_APP_PARSE_APP_ID,
+        serverURL: import.meta.env.VITE_APP_PARSE_WSS_URL,
+        javascriptKey: import.meta.env.VITE_APP__PARSE_JAVASCRIPT_ID,
+      });
+      this.parseClient.open();
+      debugger;
+      // required in each case for session take over by another device
+      await this.subscribeToSessionObserver();
+      // required in each case for watching manual changes of table entries
+      await this.subscribeToTimeTableEntries();
+
+      if (this.requireCounterpartSubscription) {
+        // counterpart check is required
         await this.checkForCounterpart();
       }
-      // addionally the startnumber selection migt subscribe to Startnumber changes
+      // addionally the startnumber selection might subscribe to Startnumber changes
       if (this.requiresStartNumberObserver) await this.subscribeToStartNumberObserver();
     },
   },
@@ -397,7 +402,7 @@ export const useTimerStore = defineStore({
     },
 
     showCounterPartWarning() {
-      return this.requiresSubscriptions && !this.isCounterPartAvailable;
+      return this.requireCounterpartSubscription && !this.isCounterPartAvailable;
     },
 
     isPopup() {
@@ -439,7 +444,8 @@ export const useTimerStore = defineStore({
       return this.user?.usertype.target === "start";
     },
 
-    requiresSubscriptions() {
+    requireCounterpartSubscription() {
+      // "MODE_STARTSTOP" is required for session observer in case another device take over
       return ["MODE_ONLY_STARTTIME", "MODE_ONLY_STOPTIME"].includes(this.mode);
     },
 
