@@ -358,22 +358,18 @@ export const useTimerStore = defineStore({
 
   getters: {
     getStartNumbers() {
-      const startNumbers = this.starters.map((s) => s[DB.REGISTRANT_FIELD_STARTNUMBER]);
-      // return only startnumbers which are not on stage
-      const startersNotOnStage = startNumbers.filter((sn) => !Object.keys(this.starterOnStage).includes(sn));
+      const stageStartNumbers = this.starters.map((s) => s[DB.REGISTRANT_FIELD_STARTNUMBER]);
+      const notOnStageStartNumbers = stageStartNumbers.filter((sn) => !this.starterOnStage[sn]);
+
       if (this.isPopup) {
-        return startersNotOnStage;
+        return notOnStageStartNumbers;
       }
 
-      // return only startnumbers which have not passed the stageTryCount
-      const availableStarters = startersNotOnStage.filter((sn) => {
-        const finished = this.finishedStarter[sn]?.length || 0;
-        if (this.getTryCountMode !== "MIN") {
-          return finished < this.user.usertype.stageMaxTryCount;
-        }
-        return finished;
+      const availableStarters = notOnStageStartNumbers.filter((sn) => {
+        const finishedRunsCount = (this.finishedStarter[sn] || []).length;
+        const maxTryCount = this.getTryCountMode !== "MIN" ? this.user.usertype.stageMaxTryCount : Infinity;
+        return finishedRunsCount < maxTryCount;
       });
-
       return availableStarters;
     },
 
