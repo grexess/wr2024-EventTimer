@@ -37,6 +37,7 @@ const getTryCountText = (sn) => {
 };
 
 const isStarterDisabled = (sn) => {
+  if (timerStore.user.usertype.stageMaxTryCount === 0) return false; // no limit for try count
   return timerStore.finishedStarter[sn] && timerStore.finishedStarter[sn].length >= timerStore.user.usertype.stageMaxTryCount;
 };
 
