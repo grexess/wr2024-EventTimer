@@ -20,11 +20,10 @@ const startStarter = () => {
       <v-row justify="center" align="center">
         <v-col>
           <v-btn
-            class="d-flex align-center justify-center"
+            class="d-flex align-center justify-center zGreenGradient"
             :elevation="12"
             :height="150"
             :width="150"
-            color="green"
             rounded="xl"
             @click="startStarter"
             ><div class="text-center">
@@ -37,11 +36,28 @@ const startStarter = () => {
         ></v-row
       ><v-row justify="center" align="center">
         <v-col class="text-center">
-          <v-btn class="text-caption" variant="tonal" size="small" :elevation="12" color="red" @click="timerStore.removeSelectedStarter">
-            <template v-slot:prepend> <v-icon color="error">mdi-card-remove</v-icon> </template>Entfernen</v-btn
+          <v-btn
+            class="text-caption zGreyGradient text-grey"
+            variant="tonal"
+            size="small"
+            :elevation="12"
+            @click="timerStore.removeSelectedStarter"
+          >
+            <template v-slot:prepend> <v-icon color="grey">mdi-card-remove</v-icon> </template>Entfernen</v-btn
           ></v-col
         ></v-row
       >
     </div>
   </v-sheet>
 </template>
+
+<style scoped>
+.zGreenGradient {
+  background: radial-gradient(circle at 18.7% 37.8%, #005058 0%, #036d78 90%) !important;
+  color: aliceblue !important;
+}
+
+.zGreyGradient {
+  background: radial-gradient(circle at 18.7% 37.8%, rgb(250, 250, 250) 0%, rgb(225, 234, 238) 90%) !important;
+}
+</style>

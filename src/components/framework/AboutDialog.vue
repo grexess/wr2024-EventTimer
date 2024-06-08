@@ -34,8 +34,8 @@ const getEnv = () => {
 
 const getSubscription = (v) => {
   return {
-    icon: timerStore[v] ? "mdi-web" : "mdi-web-off",
-    color: timerStore[v] ? "green" : "red",
+    icon: timerStore[v].subscribed ? "mdi-web" : "mdi-web-off",
+    color: timerStore[v].subscribed ? "green" : "red",
   };
 };
 

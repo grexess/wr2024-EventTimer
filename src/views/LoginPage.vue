@@ -32,9 +32,12 @@ const clearPin = () => {
 const doLogin = async () => {
   const loader = loadingComponent.value;
   try {
+    console.log("doLogin: start");
     loader.open();
     await timerStore.login(pin.value, pin.value);
+    console.log("doLogin: end");
   } catch (error) {
+    console.error({ ["doLogin-error"]: error });
     loader.close();
     let dialog = infoDialog.value;
     let dialogData = { title: "Anmeldung nicht möglich", text: error.message || error, color: "red" };
@@ -67,6 +70,7 @@ const doLogin = async () => {
       doLogin();
     }
   } finally {
+    console.log("doLogin: finally");
     loader.close();
   }
 };
@@ -107,6 +111,6 @@ const doLogin = async () => {
   text-align: center;
 }
 .test-class {
-  color: red; 
+  color: red;
 }
 </style>

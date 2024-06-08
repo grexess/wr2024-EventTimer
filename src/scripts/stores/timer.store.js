@@ -32,8 +32,6 @@ export const useTimerStore = defineStore({
     isCounterPartAvailable: null,
     starterOnStage: {},
     finishedStarter: {},
-    timeTableClassName: null,
-    eventClassName: null,
     classNameMap: {
       popup: { timeTableClass: "WR_POPUP_TIMETABLE", eventClass: "WR_POPUP" },
       event: { timeTableClass: "WR_EVENT_TIMETABLE", eventClass: "WR_EVENT" },
@@ -143,7 +141,7 @@ export const useTimerStore = defineStore({
           break;
       }
 
-      await createParseObject(this.timeTableClassName, {
+      await createParseObject(this.classNameMap[this.user.usertype.type].timeTableClass, {
         [idField]: this.user.usertype[this.getUserTypeEvent],
         [DB.CLASS_FIELD_STARTNUMBER]: this.selectedStarter,
         [DB.CLASS_FIELD_RESULT]: result,
@@ -157,12 +155,14 @@ export const useTimerStore = defineStore({
     },
 
     async resetSelectedStarter(sn) {
-      await deleteParseObject(this.timeTableClassName, this.starterOnStage[sn]);
+      await deleteParseObject(this.classNameMap[this.user.usertype.type].timeTableClass, this.starterOnStage[sn]);
       delete this.starterOnStage[sn];
     },
 
     async stopSelectedStarter(sn) {
-      const time = await updateParseObject(this.timeTableClassName, this.starterOnStage[sn], { [DB.CLASS_FIELD_FINISHTIME]: Date.now() });
+      const time = await updateParseObject(this.classNameMap[this.user.usertype.type].timeTableClass, this.starterOnStage[sn], {
+        [DB.CLASS_FIELD_FINISHTIME]: Date.now(),
+      });
       this.finishedStarter[sn] ? this.finishedStarter[sn].push(time.id) : (this.finishedStarter[sn] = [time.id]);
       delete this.starterOnStage[sn];
     },
@@ -182,20 +182,18 @@ export const useTimerStore = defineStore({
       if (this.isPopup) {
         this.user.usertype.stageMaxTryCount = this.user.usertype.popupType === "free5x5" ? 5 : 1000;
       }
-
       this.mode = this.user.usertype.mode;
 
-      this.initSubscriptions(); // init parseClient for LiveQuery
+      try {
+        await this.initSubscriptions(); // init parseClient for LiveQuery
+        console.log("initSubscriptions:done");
 
-      const queryData = { eventId: this.user.usertype.eventId };
-      if (this.user.usertype.type === "event") {
-        queryData.stageName = this.user.usertype.stageName;
+        // redirect to previous url or default to home page
+        router.push(this.returnUrl || "/");
+      } catch (error) {
+        console.log("login:error", error);
+        throw error;
       }
-
-      this.timeTableClassName = this.classNameMap[this.user.usertype.type].timeTableClass;
-      this.eventClassName = this.classNameMap[this.user.usertype.type].eventClass;
-      // redirect to previous url or default to home page
-      router.push(this.returnUrl || "/");
     },
 
     async callParseFunction(functionName, params) {
@@ -224,7 +222,6 @@ export const useTimerStore = defineStore({
     },
 
     async checkForCounterpart() {
-      debugger;
       if (!this.user) return;
       const counterMode = this.user.usertype.mode === "MODE_ONLY_STARTTIME" ? "MODE_ONLY_STOPTIME" : "MODE_ONLY_STARTTIME";
       let queryData = {
@@ -264,32 +261,37 @@ export const useTimerStore = defineStore({
      *  MODE_ONLY_STOPTIME watches for reseting of runners
      */
     async subscribeToTimeTableEntries() {
-      const className = this.timeTableClassName;
-      const queryData = { EventId: this.user.usertype.eventId };
-      if (this.user.usertype.type === "event") {
-        queryData.Stage = this.user.usertype.stageName;
-      }
+      try {
+        const className = this.classNameMap[this.user.usertype.type].timeTableClass;
+        const queryData = { EventId: this.user.usertype.eventId };
+        if (this.user.usertype.type === "event") {
+          queryData.Stage = this.user.usertype.stageName;
+        }
 
-      const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
-      const query = this.getQuery({ className, queryData, selectedFields });
-      this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+        const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
+        const query = this.getQuery({ className, queryData, selectedFields });
+        this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
-      if (this.mode === "MODE_ONLY_STARTTIME") {
-        this.timeTableSubscription.on("update", (time) => {
+        if (this.mode === "MODE_ONLY_STARTTIME") {
+          this.timeTableSubscription.on("update", (time) => {
+            const sn = time.get(DB.CLASS_FIELD_STARTNUMBER);
+            this.finishedStarter[sn] ? this.finishedStarter[sn].push(time.id) : (this.finishedStarter[sn] = [time.id]);
+            delete this.starterOnStage[sn];
+          });
+        }
+
+        this.timeTableSubscription.on("create", (time) => {
           const sn = time.get(DB.CLASS_FIELD_STARTNUMBER);
-          this.finishedStarter[sn] ? this.finishedStarter[sn].push(time.id) : (this.finishedStarter[sn] = [time.id]);
+          this.starterOnStage[sn] = time.id;
+        });
+        this.timeTableSubscription.on("delete", (time) => {
+          const sn = time.get(DB.CLASS_FIELD_STARTNUMBER);
           delete this.starterOnStage[sn];
         });
+      } catch (error) {
+        console.log("subscribeToTimeTableEntries:error", error);
+        throw error;
       }
-
-      this.timeTableSubscription.on("create", (time) => {
-        const sn = time.get(DB.CLASS_FIELD_STARTNUMBER);
-        this.starterOnStage[sn] = time.id;
-      });
-      this.timeTableSubscription.on("delete", (time) => {
-        const sn = time.get(DB.CLASS_FIELD_STARTNUMBER);
-        delete this.starterOnStage[sn];
-      });
     },
 
     /* subscription required for watching state of timekeeper counterpart
@@ -297,19 +299,27 @@ export const useTimerStore = defineStore({
      *  MODE_ONLY_STOPTIME watches for state of start timekeeper
      */
     async subscribeToSessionObserver() {
-      debugger;
       const query = this.getSessionObserverQuery;
-      this.sessionObserverSubscription = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      const _sessionObserverSubscription = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      // await _sessionObserverSubscription.subscribePromise;
+      this.sessionObserverSubscription = _sessionObserverSubscription;
 
-      console.log("SessionObserver Subscription");
+      console.log({ subscribed: this.sessionObserverSubscription.subscribed });
+
+      console.log("Set SessionObserver Subscription [create]");
       this.sessionObserverSubscription.on("create", async (wrSess) => {
+        console.log("On SessionObserver [create]");
         // check if own session is taken over by another device
         await this.checkForCounterpart(wrSess);
       });
+      console.log("Set SessionObserver Subscription [update]");
       this.sessionObserverSubscription.on("update", async (wrSess) => {
+        console.log("On SessionObserver [update]");
         await this.checkForCounterpart(wrSess);
       });
+      console.log("Set SessionObserver Subscription [delete]");
       this.sessionObserverSubscription.on("delete", async (wrSess) => {
+        console.log("On SessionObserver [delete]");
         // check if own session is taken over by another device
         await this.checkForSessionTakeOver(wrSess);
         // check if counterpart session is deleted
@@ -333,26 +343,31 @@ export const useTimerStore = defineStore({
 
     async initSubscriptions() {
       // init parseClient for LiveQuery
+      try {
+        const LiveQueryClient = Parse.LiveQueryClient;
+        this.parseClient = new LiveQueryClient({
+          applicationId: import.meta.env.VITE_APP_PARSE_APP_ID,
+          serverURL: import.meta.env.VITE_APP_PARSE_WSS_URL,
+          javascriptKey: import.meta.env.VITE_APP__PARSE_JAVASCRIPT_ID,
+        });
+        this.parseClient.open();
+        // required in each case for session take over by another device
+        await this.subscribeToSessionObserver();
+        // required in each case for watching manual changes of table entries
+        await this.subscribeToTimeTableEntries();
 
-      const LiveQueryClient = Parse.LiveQueryClient;
-      this.parseClient = new LiveQueryClient({
-        applicationId: import.meta.env.VITE_APP_PARSE_APP_ID,
-        serverURL: import.meta.env.VITE_APP_PARSE_WSS_URL,
-        javascriptKey: import.meta.env.VITE_APP__PARSE_JAVASCRIPT_ID,
-      });
-      this.parseClient.open();
-      debugger;
-      // required in each case for session take over by another device
-      await this.subscribeToSessionObserver();
-      // required in each case for watching manual changes of table entries
-      await this.subscribeToTimeTableEntries();
-
-      if (this.requireCounterpartSubscription) {
-        // counterpart check is required
-        await this.checkForCounterpart();
+        if (this.requireCounterpartSubscription) {
+          // counterpart check is required
+          await this.checkForCounterpart();
+        }
+        // additionally the startnumber selection might subscribe to Startnumber changes
+        if (this.requiresStartNumberObserver) {
+          await this.subscribeToStartNumberObserver();
+        }
+      } catch (error) {
+        console.log("initSubscriptions:error", error);
+        throw error;
       }
-      // addionally the startnumber selection might subscribe to Startnumber changes
-      if (this.requiresStartNumberObserver) await this.subscribeToStartNumberObserver();
     },
   },
 

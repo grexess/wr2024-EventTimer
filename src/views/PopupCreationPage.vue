@@ -286,7 +286,7 @@ const getFooterButtons = () => {
       <v-card-title class="ma-4"
         ><v-row class="text-h5 font-italic text-wrDarkGreen"
           >WeRace - Popups <v-spacer /><v-img
-            :src="`${imageHost}/logo/wrSymbol-black-small.png`"
+            :src="`${imageHost}/logo/wrSymbol_blue_white.png`"
             max-width="35px"
             height="35px"
           ></v-img></v-row

@@ -29,14 +29,12 @@ const stopStarter = async (starter) => {
     <template v-slot:title> Noch nix los </template>
     <v-card-text class="text-center text-grey"> Bitte warten bis Gegenstelle für die Zeitnahme angemeldet ist </v-card-text>
   </v-card>
-  <v-card
-    v-else-if="!timerStore.getStartNumbersOnStage.length"
-    class="mx-auto my-4 bg-yellow-lighten-5 text-yellow"
-    width="300"
-    :prepend-icon="timerStore.mode !== 'MODE_STARTSTOP' ? 'mdi-timer-sand' : ''"
-  >
-    <template v-if="timerStore.mode !== 'MODE_STARTSTOP'" v-slot:title> Achtung </template>
-    <v-card-text class="text-center text-grey"> Keine Starter unterwegs </v-card-text>
+  <v-card v-else-if="!timerStore.getStartNumbersOnStage.length" class="ma-4 pa-4 elevation-4" width="320px">
+    <div class="text-center text-secondary">Derzeit niemand auf Strecke.</div>
+    <v-divider class="ma-2" />
+    <div class="text-center text-disabled text-caption">
+      {{ timerStore.mode !== "MODE_STARTSTOP" ? "Gestartete Teilnehmer erscheinen automatisch." : "" }}
+    </div>
   </v-card>
   <v-sheet v-else class="elevation-4 box d-flex align-center justify-center my-2 zRelative">
     <!-- <v-sheet class="legend rounded elevation-4 pa-1" color="white">

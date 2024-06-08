@@ -99,9 +99,10 @@ const getTargetLabel = () => {
       </v-menu>
 
       <template v-slot:append>
-        <v-img :width="35" cover :src="`${imageHost}/logo/wrSymbol-black-small.png`"></v-img>
+        <v-img :width="35" cover :src="`${imageHost}/logo/wrSymbol_blue_white.png`"></v-img>
       </template>
     </v-app-bar>
+
     <v-main>
       <router-view v-slot="{ Component, route }">
         <transition :name="route.meta.transition || 'fade'"> <component :is="Component" /> </transition>

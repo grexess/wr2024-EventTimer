@@ -62,11 +62,14 @@ const getRules = [
 ];
 </script>
 <template>
-  <v-card v-if="timerStore.showCounterPartWarning" class="mx-auto elevation-4" width="400">
-    <v-card-title class="bgRed text-white"> <v-icon>mdi-timer-sand</v-icon>"Stage not ready"</v-card-title>
-    <v-card-text class="ma-2 text-center text-grey">
-      {{ `Bitte warten bis Zeitnehmer [${timerStore.isStart ? "Ziel" : "Start"}] angemeldet ist` }}
-    </v-card-text>
+  <v-card v-if="timerStore.showCounterPartWarning" class="ma-4 pa-4 elevation-4" width="320px">
+    <div class="text-center text-secondary">
+      Gegenstelle <span class="font-weight-bold">{{ `[${timerStore.isStart ? "Ziel" : "Start"}]` }}</span> nicht angemeldet
+    </div>
+    <v-divider class="ma-2" />
+    <div class="text-center text-disabled text-caption">
+      {{ `Bitte warten bis sich der [${timerStore.isStart ? "Ziel" : "Start"}]-Zeitnehmer anmeldet` }}
+    </div>
   </v-card>
 
   <v-sheet v-else class="elevation-0 align-center justify-center zRelative">
@@ -76,7 +79,11 @@ const getRules = [
       class="font-weight-bold"
       label="Startnummer"
       :items="timerStore.getStartNumbers"
-      variant="solo-inverted"
+      variant="solo"
+      bg-color="wrDarkGreen"
+      base-color="wrDarkGreen"
+      color="aliceblue"
+      item-color="wrDarkGreen"
       hide-details
       clearable
       @click:clear="timerStore.selectedStarter = null"
@@ -118,7 +125,9 @@ const getRules = [
         </v-list-item>
       </template>
     </v-select>
-    <v-snackbar v-model="snackbar" location="top" :timeout="1500" color="success" variant="tonal">Starterliste aktualisiert</v-snackbar>
+    <v-snackbar v-model="snackbar" location="top" :timeout="1500" color="wrDarkGreen" variant="tonal" class="text-center"
+      >Starterliste aktualisiert</v-snackbar
+    >
   </v-sheet>
 </template>
 
@@ -126,5 +135,10 @@ const getRules = [
 .bgRed {
   background: rgb(241, 11, 11);
   background: linear-gradient(173deg, rgba(241, 11, 11, 1) 0%, rgba(235, 222, 219, 1) 100%);
+}
+
+.zGreenGradient {
+  background: radial-gradient(circle at 18.7% 37.8%, #005058 0%, #036d78 90%) !important;
+  color: aliceblue !important;
 }
 </style>

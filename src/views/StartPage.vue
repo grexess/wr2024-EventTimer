@@ -18,6 +18,7 @@ import StopTime from "@/components/startPage/StopTime.vue";
 import ValueInput from "@/components/startPage/ValueInput.vue";
 
 const fetchData = () => {
+  crud.value.crudNonConfirmAction("read", timerStore.initSubscriptions, { obj: "Resultate" });
   crud.value.crudNonConfirmAction("read", timerStore.fetchData, { obj: "Resultate" });
 };
 
