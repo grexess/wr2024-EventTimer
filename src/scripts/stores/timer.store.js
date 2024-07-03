@@ -47,12 +47,17 @@ export const useTimerStore = defineStore({
     async fetchData() {
       try {
         let entries;
+
+        const select = this.isResultKeeping
+          ? [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_RESULT]
+          : [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
+
         switch (this.user.usertype.type) {
           case "popup":
             entries = await findParseObjects({
               className: DB.CLASS_POPUP_TIMETABLE,
               query: { [DB.CLASS_FIELD_POPUPID]: this.user.usertype.popupId },
-              select: [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME],
+              select,
             });
             this.starters = Array.from(
               entries.reduce((acc, cur) => {
@@ -63,10 +68,11 @@ export const useTimerStore = defineStore({
             break;
           case "event":
             const { eventId, stageName } = this.user.usertype;
+
             entries = await findParseObjects({
               className: DB.CLASS_EVENT_TIMETABLE,
               query: { [DB.CLASS_FIELD_EVENTID]: eventId, [DB.CLASS_FIELD_STAGE]: stageName },
-              select: [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME],
+              select,
             });
 
             const startNumbers = await getParseObject(DB.CLASS_EVENT, eventId, [DB.CLASS_ARRAY_REGISTRANTS]);
@@ -79,18 +85,25 @@ export const useTimerStore = defineStore({
         this.starterOnStage = {};
         this.finishedStarter = {};
 
+        // TODO only for timekeeper
         for (const cur of entries) {
           const sn = cur.get(DB.CLASS_FIELD_STARTNUMBER);
-          const finishTime = cur.get(DB.CLASS_FIELD_FINISHTIME);
-          if (!finishTime && !this.starterOnStage[sn]) {
-            this.starterOnStage[sn] = cur.id;
-          } else if (finishTime) {
-            this.finishedStarter[sn] = this.finishedStarter[sn] || [];
-            this.finishedStarter[sn].push(cur.id);
+
+          if (!this.isResultKeeping) {
+            const finishTime = cur.get(DB.CLASS_FIELD_FINISHTIME);
+            if (!finishTime && !this.starterOnStage[sn]) {
+              this.starterOnStage[sn] = cur.id;
+            } else if (finishTime) {
+              this.finishedStarter[sn] = this.finishedStarter[sn] || [];
+              this.finishedStarter[sn].push(cur.id);
+            }
+          } else {
+            if (cur.get(DB.CLASS_FIELD_RESULT)) {
+              this.finishedStarter[sn] = this.finishedStarter[sn] || [];
+              this.finishedStarter[sn].push(cur.id);
+            }
           }
         }
-
-        // this.initSubscriptions();
       } catch (error) {
         if (error.code === 209) {
           Parse.User.logOut();
@@ -147,6 +160,9 @@ export const useTimerStore = defineStore({
         [DB.CLASS_FIELD_RESULT]: result,
         [DB.CLASS_FIELD_STAGE]: this.user.usertype.stageName, // only for event
       });
+
+      await this.fetchData(); // reload starter data
+
       this.selectedStarter = null;
     },
 
@@ -379,7 +395,6 @@ export const useTimerStore = defineStore({
       if (this.isPopup) {
         return notOnStageStartNumbers;
       }
-
       const availableStarters = notOnStageStartNumbers.filter((sn) => {
         const finishedRunsCount = (this.finishedStarter[sn] || []).length;
         const maxTryCount = this.getTryCountMode !== "MIN" ? this.user.usertype.stageMaxTryCount : Infinity;
@@ -408,7 +423,7 @@ export const useTimerStore = defineStore({
       return ["MODE_ONLY_STOPTIME", "MODE_STARTSTOP"].includes(this.mode);
     },
 
-    showValueInput() {
+    isResultKeeping() {
       return ["MODE_WIDTH", "MODE_POINTS"].includes(this.mode);
     },
 

@@ -31,7 +31,7 @@ fetchData();
       <TransitionGroup name="roll"> <StartTime v-if="timerStore.showStartTimer" @start="openSnackBar" /></TransitionGroup>
       <TransitionGroup name="roll"> <ResetTime v-if="timerStore.showResetTimer" @reset="openSnackBar" /></TransitionGroup>
       <TransitionGroup name="roll"> <StopTime v-if="timerStore.showStopTime" @stop="openSnackBar" /></TransitionGroup>
-      <TransitionGroup name="roll"> <ValueInput v-if="timerStore.showValueInput" @save="openSnackBar" /></TransitionGroup>
+      <TransitionGroup name="roll"> <ValueInput v-if="timerStore.isResultKeeping" @save="openSnackBar" /></TransitionGroup>
     </div>
     <VLayoutItem model-value position="bottom" class="text-end" size="88">
       <div class="ma-4">
