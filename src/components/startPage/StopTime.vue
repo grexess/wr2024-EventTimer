@@ -29,7 +29,7 @@ const stopStarter = async (starter) => {
     <template v-slot:title> Noch nix los </template>
     <v-card-text class="text-center text-grey"> Bitte warten bis Gegenstelle für die Zeitnahme angemeldet ist </v-card-text>
   </v-card>
-  <v-card v-else-if="!timerStore.getStartNumbersOnStage.length" class="ma-4 pa-4 elevation-4" width="320px">
+  <v-card v-else-if="!timerStore.getStartNumbersOnStage.length" class="ma-4 pa-4 elevation-4">
     <div class="text-center text-secondary">Derzeit niemand auf Strecke.</div>
     <v-divider class="ma-2" />
     <div class="text-center text-disabled text-caption">

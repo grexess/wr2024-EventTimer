@@ -74,9 +74,8 @@ export const useTimerStore = defineStore({
               query: { [DB.CLASS_FIELD_EVENTID]: eventId, [DB.CLASS_FIELD_STAGE]: stageName },
               select,
             });
-
             const startNumbers = await getParseObject(DB.CLASS_EVENT, eventId, [DB.CLASS_ARRAY_REGISTRANTS]);
-            this.starters = startNumbers.get(DB.CLASS_ARRAY_REGISTRANTS);
+            this.starters = startNumbers.get(DB.CLASS_ARRAY_REGISTRANTS).filter((sn) => sn[DB.REGISTRANT_FIELD_STARTNUMBER]);
             break;
           default:
             break;
