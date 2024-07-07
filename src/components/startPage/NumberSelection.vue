@@ -74,6 +74,7 @@ const getRules = [
 
   <v-sheet v-else class="elevation-0 align-center justify-center zRelative">
     <div v-if="isAddStarterDisabled()" class="text-center text-red" style="font-size: 0.7em">Maximale Starterzahl erreicht</div>
+    <div v-if="snackbar" class="text-center text-wrDarkGreen" style="font-size: 0.7em">Starterliste aktualisiert</div>
     <v-select
       v-model="timerStore.selectedStarter"
       class="font-weight-bold"
@@ -125,9 +126,6 @@ const getRules = [
         </v-list-item>
       </template>
     </v-select>
-    <v-snackbar v-model="snackbar" location="top" :timeout="1500" color="wrDarkGreen" variant="tonal" class="text-center"
-      >Starterliste aktualisiert</v-snackbar
-    >
   </v-sheet>
 </template>
 
