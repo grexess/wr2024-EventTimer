@@ -130,12 +130,11 @@ const widthMeasurements = {
         <v-card
           color="wrDarkGreen"
           @click="saveResult()"
-          width="380px"
-          class="pa-4 mb-4 text-left"
+          class="pa-4 mb-4"
           :disabled="parseFloat(input) === 0 || !timerStore.selectedStarter"
         >
-          <div class="d-flex justify-space-between">
-            <v-sheet class="ma-2 pa-2" color="transparent">
+          <v-row no-gutters align="center" justify="center">
+            <v-col cols="12" sm="6">
               <div>
                 <div class="d-block pa-2">
                   Startnummer: <b>{{ timerStore.selectedStarter }}</b>
@@ -143,12 +142,10 @@ const widthMeasurements = {
                 <div class="d-block pa-2 text-h5">
                   <b>{{ input }} {{ label }}</b>
                 </div>
-              </div>
-            </v-sheet>
-            <v-sheet class="ma-2 pa-2 d-flex align-center" color="transparent">
-              <v-icon size="64" class="ml-4"> mdi-content-save-move-outline </v-icon>
-            </v-sheet>
-          </div>
+              </div></v-col
+            >
+            <v-col cols="12" sm="6"> <v-icon size="64" class="ml-4"> mdi-content-save-move-outline </v-icon></v-col>
+          </v-row>
         </v-card>
       </div>
     </v-card-text>
