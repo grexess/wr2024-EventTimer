@@ -61,7 +61,7 @@ export const useTimerStore = defineStore({
       try {
         let entries;
 
-        const select = RESULTKEEPING_MAP.get(this.mode).isResultKeeping
+        const select = RESULTKEEPING_MAP[this.mode].isResultKeeping
           ? [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_RESULT]
           : [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
 
@@ -101,7 +101,7 @@ export const useTimerStore = defineStore({
         for (const cur of entries) {
           const sn = cur.get(DB.CLASS_FIELD_STARTNUMBER);
 
-          if (!RESULTKEEPING_MAP.get(this.mode).isResultKeeping) {
+          if (!RESULTKEEPING_MAP[this.mode].isResultKeeping) {
             const finishTime = cur.get(DB.CLASS_FIELD_FINISHTIME);
             if (!finishTime && !this.starterOnStage[sn]) {
               this.starterOnStage[sn] = cur.id;
@@ -344,7 +344,6 @@ export const useTimerStore = defineStore({
         await this.checkForSessionTakeOver(wrSess); // check if own session is taken over by another device
         await this.checkForCounterpart(wrSess); // check if counterpart session is deleted
       });
-      debugger;
       this.sessionObserverSubscription = _sessionObserver;
     },
 
@@ -376,13 +375,12 @@ export const useTimerStore = defineStore({
         await this.subscribeToSessionObserver();
         // required in each case for watching manual changes of table entries
         await this.subscribeToTimeTableEntries();
-        debugger;
-        if (RESULTKEEPING_MAP.get(this.mode).requireCounterpartSubscription) {
+        if (RESULTKEEPING_MAP[this.mode].requireCounterpartSubscription) {
           // counterpart check is required
           await this.checkForCounterpart();
         }
         // additionally the startnumber selection might subscribe to Startnumber changes
-        if (RESULTKEEPING_MAP.get(this.mode).requiresStartNumberObserver) {
+        if (RESULTKEEPING_MAP[this.mode].requiresStartNumberObserver) {
           await this.subscribeToStartNumberObserver();
         }
       } catch (error) {
@@ -417,7 +415,7 @@ export const useTimerStore = defineStore({
     },
 
     showCounterPartWarning() {
-      return RESULTKEEPING_MAP.get(this.mode).requireCounterpartSubscription && !this.isCounterPartAvailable;
+      return RESULTKEEPING_MAP[this.mode].requireCounterpartSubscription && !this.isCounterPartAvailable;
     },
 
     isPopup() {
