@@ -61,4 +61,13 @@ const deleteParseObject = async (className, id) => {
   await entry.destroy();
 };
 
-export { findParseObjects, firstParseObject, getParseObject, createParseObject, updateParseObject, deleteParseObject };
+const getParseQuery = ({ className, queryData, selectedFields }) => {
+  const query = new Parse.Query(className);
+  for (const key in queryData) {
+    query.equalTo(key, queryData[key]);
+  }
+  query.select(selectedFields);
+  return query;
+};
+
+export { findParseObjects, firstParseObject, getParseObject, createParseObject, updateParseObject, deleteParseObject, getParseQuery };

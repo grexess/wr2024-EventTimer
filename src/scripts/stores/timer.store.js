@@ -1,11 +1,6 @@
 import { defineStore } from "pinia";
 import { router } from "@/scripts/router.js";
-import { ResultKeepingMap, DB } from "@/config/config.js";
-
-import Parse from "parse/dist/parse.min.js";
-Parse.serverURL = import.meta.env.VITE_APP_PARSE_SERVER_URL;
-Parse.initialize(import.meta.env.VITE_APP_PARSE_APP_ID, import.meta.env.VITE_APP_PARSE_JAVASCRIPT_ID);
-Parse.enableLocalDatastore();
+import { RESULTKEEPING_MAP, DB } from "@/config/config.js";
 
 import {
   findParseObjects,
@@ -14,7 +9,25 @@ import {
   createParseObject,
   updateParseObject,
   deleteParseObject,
+  getParseQuery,
 } from "@/scripts/parseFunctions.js";
+
+import Parse from "parse/dist/parse.min.js";
+
+const applicationId = import.meta.env.VITE_APP_PARSE_APP_ID;
+const serverURL = import.meta.env.VITE_APP_PARSE_WSS_URL;
+const javascriptKey = import.meta.env.VITE_APP_PARSE_JAVASCRIPT_ID;
+
+Parse.serverURL = serverURL;
+Parse.initialize(applicationId, javascriptKey);
+
+const LiveQueryClient = Parse.LiveQueryClient;
+const ParseClient = new LiveQueryClient({
+  applicationId,
+  serverURL,
+  javascriptKey,
+});
+ParseClient.open();
 
 export const useTimerStore = defineStore({
   id: "timerStore",
@@ -27,7 +40,7 @@ export const useTimerStore = defineStore({
     returnUrl: null,
     starters: [],
     mode: "MODE_STARTSTOP",
-    modeMap: ResultKeepingMap,
+    modeMap: RESULTKEEPING_MAP,
     selectedStarter: null,
     isCounterPartAvailable: null,
     starterOnStage: {},
@@ -48,7 +61,7 @@ export const useTimerStore = defineStore({
       try {
         let entries;
 
-        const select = this.isResultKeeping
+        const select = RESULTKEEPING_MAP.get(this.mode).isResultKeeping
           ? [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_RESULT]
           : [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
 
@@ -88,7 +101,7 @@ export const useTimerStore = defineStore({
         for (const cur of entries) {
           const sn = cur.get(DB.CLASS_FIELD_STARTNUMBER);
 
-          if (!this.isResultKeeping) {
+          if (!RESULTKEEPING_MAP.get(this.mode).isResultKeeping) {
             const finishTime = cur.get(DB.CLASS_FIELD_FINISHTIME);
             if (!finishTime && !this.starterOnStage[sn]) {
               this.starterOnStage[sn] = cur.id;
@@ -236,7 +249,8 @@ export const useTimerStore = defineStore({
       router.push("/login");
     },
 
-    async checkForCounterpart() {
+    async checkForCounterpart(sessObj) {
+      if (sessObj) console.log("checkForCounterpart:sessObj", sessObj);
       if (!this.user) return;
       const counterMode = this.user.usertype.mode === "MODE_ONLY_STARTTIME" ? "MODE_ONLY_STOPTIME" : "MODE_ONLY_STARTTIME";
       let queryData = {
@@ -284,7 +298,7 @@ export const useTimerStore = defineStore({
         }
 
         const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
-        const query = this.getQuery({ className, queryData, selectedFields });
+        const query = getParseQuery({ className, queryData, selectedFields });
         this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
         if (this.mode === "MODE_ONLY_STARTTIME") {
@@ -314,32 +328,24 @@ export const useTimerStore = defineStore({
      *  MODE_ONLY_STOPTIME watches for state of start timekeeper
      */
     async subscribeToSessionObserver() {
-      const query = this.getSessionObserverQuery;
-      const _sessionObserverSubscription = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
-      // await _sessionObserverSubscription.subscribePromise;
-      this.sessionObserverSubscription = _sessionObserverSubscription;
+      if (!this.user) return;
 
-      console.log({ subscribed: this.sessionObserverSubscription.subscribed });
+      const queryData = {
+        WR_ID: this.user.usertype[this.getUserTypeEvent],
+        ...(this.user.usertype.type === "event" && { StageName: this.user.usertype.stageName }),
+      };
 
-      console.log("Set SessionObserver Subscription [create]");
-      this.sessionObserverSubscription.on("create", async (wrSess) => {
-        console.log("On SessionObserver [create]");
-        // check if own session is taken over by another device
-        await this.checkForCounterpart(wrSess);
+      const query = getParseQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields: ["Target", "StageName"] });
+      const _sessionObserver = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      // check if own session is taken over by another device
+      _sessionObserver.on("create", async (wrSess) => await this.checkForCounterpart(wrSess));
+      _sessionObserver.on("update", async (wrSess) => await this.checkForCounterpart(wrSess));
+      _sessionObserver.on("delete", async (wrSess) => {
+        await this.checkForSessionTakeOver(wrSess); // check if own session is taken over by another device
+        await this.checkForCounterpart(wrSess); // check if counterpart session is deleted
       });
-      console.log("Set SessionObserver Subscription [update]");
-      this.sessionObserverSubscription.on("update", async (wrSess) => {
-        console.log("On SessionObserver [update]");
-        await this.checkForCounterpart(wrSess);
-      });
-      console.log("Set SessionObserver Subscription [delete]");
-      this.sessionObserverSubscription.on("delete", async (wrSess) => {
-        console.log("On SessionObserver [delete]");
-        // check if own session is taken over by another device
-        await this.checkForSessionTakeOver(wrSess);
-        // check if counterpart session is deleted
-        await this.checkForCounterpart(wrSess);
-      });
+      debugger;
+      this.sessionObserverSubscription = _sessionObserver;
     },
 
     /* subscription required for EVENT timekeeper which selects a startnumber
@@ -370,13 +376,13 @@ export const useTimerStore = defineStore({
         await this.subscribeToSessionObserver();
         // required in each case for watching manual changes of table entries
         await this.subscribeToTimeTableEntries();
-
-        if (this.requireCounterpartSubscription) {
+        debugger;
+        if (RESULTKEEPING_MAP.get(this.mode).requireCounterpartSubscription) {
           // counterpart check is required
           await this.checkForCounterpart();
         }
         // additionally the startnumber selection might subscribe to Startnumber changes
-        if (this.requiresStartNumberObserver) {
+        if (RESULTKEEPING_MAP.get(this.mode).requiresStartNumberObserver) {
           await this.subscribeToStartNumberObserver();
         }
       } catch (error) {
@@ -406,28 +412,12 @@ export const useTimerStore = defineStore({
       return Object.keys(this.starterOnStage);
     },
 
-    showSelection() {
-      return ["MODE_ONLY_STARTTIME", "MODE_STARTSTOP", "MODE_WIDTH", "MODE_POINTS"].includes(this.mode);
-    },
-
-    showStartTimer() {
-      return ["MODE_ONLY_STARTTIME", "MODE_STARTSTOP"].includes(this.mode) && this.selectedStarter;
-    },
-
-    showResetTimer() {
-      return ["MODE_ONLY_STARTTIME", "MODE_STARTSTOP"].includes(this.mode) && this.getStartNumbersOnStage.length;
-    },
-
-    showStopTime() {
-      return ["MODE_ONLY_STOPTIME", "MODE_STARTSTOP"].includes(this.mode);
-    },
-
     isResultKeeping() {
       return ["MODE_WIDTH", "MODE_POINTS"].includes(this.mode);
     },
 
     showCounterPartWarning() {
-      return this.requireCounterpartSubscription && !this.isCounterPartAvailable;
+      return RESULTKEEPING_MAP.get(this.mode).requireCounterpartSubscription && !this.isCounterPartAvailable;
     },
 
     isPopup() {
@@ -469,15 +459,6 @@ export const useTimerStore = defineStore({
       return this.user?.usertype.target === "start";
     },
 
-    requireCounterpartSubscription() {
-      // "MODE_STARTSTOP" is required for session observer in case another device take over
-      return ["MODE_ONLY_STARTTIME", "MODE_ONLY_STOPTIME"].includes(this.mode);
-    },
-
-    requiresStartNumberObserver() {
-      return this.isEvent && ["MODE_STARTSTOP", "MODE_ONLY_STARTTIME", "MODE_WIDTH", "MODE_POINTS"].includes(this.mode);
-    },
-
     getMaxStartNumber() {
       const popupType = this.user?.usertype?.popupType;
 
@@ -488,35 +469,12 @@ export const useTimerStore = defineStore({
       return 1;
     },
 
-    getSessionObserverQuery() {
-      if (!this.user) return;
-      const queryData = {
-        WR_ID: this.user.usertype[this.getUserTypeEvent],
-      };
-      if (this.user.usertype.type === "event") {
-        queryData.StageName = this.user.usertype.stageName;
-      }
-      const selectedFields = ["Target", "StageName"];
-      return this.getQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields });
-    },
-
     getUserTypeEvent() {
       let field = DB.USERTYPE_FIELD_EVENTID;
       if (this.user.usertype.type === "popup") {
         field = DB.USERTYPE_FIELD_POPUPID;
       }
       return field;
-    },
-
-    getQuery() {
-      return ({ className, queryData, selectedFields }) => {
-        const query = new Parse.Query(className);
-        for (const key in queryData) {
-          query.equalTo(key, queryData[key]);
-        }
-        query.select(selectedFields);
-        return query;
-      };
     },
   },
 });

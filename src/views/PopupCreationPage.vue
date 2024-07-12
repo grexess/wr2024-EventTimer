@@ -3,7 +3,7 @@ import { ref, computed, inject, reactive, watch } from "vue";
 
 import moment from "moment";
 
-import { ResultKeepingMap, DEV_DEFAULT_MAIL, DEV_DEFAULT_POPUPNAME } from "@/config/config.js";
+import { RESULTKEEPING_MAP, DEV_DEFAULT_MAIL, DEV_DEFAULT_POPUPNAME } from "@/config/config.js";
 
 const infoDialog = inject("$InfoDialog");
 const snackBar = inject("$SnackBar");
@@ -69,7 +69,7 @@ const eventNameRules = [
 const emailRules = [(v) => !!v || "EMail ist erforderlich", (v) => /.+@.+\..+/.test(v) || "Bitte gültiges EMail Format eingeben"];
 
 const timeKeepings = computed(() => {
-  return Object.entries(ResultKeepingMap).reduce((acc, [key, value]) => {
+  return Object.entries(RESULTKEEPING_MAP).reduce((acc, [key, value]) => {
     if (value.hasOwnProperty("modeDropDown")) {
       acc.push({ text: value.modeDropDown, value: key });
     }
@@ -237,7 +237,7 @@ const codeRefresh = () => {
 };
 
 const getResultKeepingText = () => {
-  return ResultKeepingMap[timeKeeping.value].modeDropDown;
+  return RESULTKEEPING_MAP[timeKeeping.value].modeDropDown;
 };
 
 const getLabelPIN = (v) => {

@@ -3,7 +3,7 @@ import { ref, computed, inject } from "vue";
 const emit = defineEmits(["save"]);
 import { useTimerStore } from "@/scripts/stores/index.js";
 const timerStore = useTimerStore();
-import { ResultKeepingMap } from "@/config/config.js";
+import { RESULTKEEPING_MAP } from "@/config/config.js";
 const infoDialog = inject("$InfoDialog");
 const loadingComponent = inject("$LoadingComponent");
 const input = ref("0");
@@ -14,7 +14,7 @@ const isWidthMode = computed(() => {
 });
 
 const title = computed(() => {
-  return Object.entries(ResultKeepingMap).find(([key, value]) => key === timerStore.mode)[1].title;
+  return Object.entries(RESULTKEEPING_MAP).find(([key, value]) => key === timerStore.mode)[1].title;
 });
 
 const label = computed(() => {
