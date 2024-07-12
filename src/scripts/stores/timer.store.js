@@ -15,11 +15,8 @@ import {
 import Parse from "parse/dist/parse.min.js";
 
 const applicationId = import.meta.env.VITE_APP_PARSE_APP_ID;
+const serverURL = import.meta.env.VITE_APP_PARSE_WSS_URL;
 const javascriptKey = import.meta.env.VITE_APP_PARSE_JAVASCRIPT_ID;
-const serverURL = import.meta.env.VITE_APP_PARSE_SERVER_URL;
-const wssURL = import.meta.env.VITE_APP_PARSE_WSS_URL;
-
-console.log({ applicationId, serverURL, javascriptKey });
 
 Parse.serverURL = serverURL;
 Parse.initialize(applicationId, javascriptKey);
@@ -27,7 +24,7 @@ Parse.initialize(applicationId, javascriptKey);
 const LiveQueryClient = Parse.LiveQueryClient;
 const ParseClient = new LiveQueryClient({
   applicationId,
-  serverURL: wssURL,
+  serverURL,
   javascriptKey,
 });
 ParseClient.open();
@@ -240,9 +237,9 @@ export const useTimerStore = defineStore({
     },
 
     async logout() {
-      if (ParseClient) {
+      if (this.parseClient) {
         try {
-          ParseClient.close();
+          this.parseClient.close();
         } catch (error) {}
       }
       await Parse.User.logOut();
@@ -302,7 +299,7 @@ export const useTimerStore = defineStore({
 
         const selectedFields = [DB.CLASS_FIELD_STARTNUMBER, DB.CLASS_FIELD_STARTTIME, DB.CLASS_FIELD_FINISHTIME];
         const query = getParseQuery({ className, queryData, selectedFields });
-        this.timeTableSubscription = ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+        this.timeTableSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
         if (this.mode === "MODE_ONLY_STARTTIME") {
           this.timeTableSubscription.on("update", (time) => {
@@ -339,7 +336,7 @@ export const useTimerStore = defineStore({
       };
 
       const query = getParseQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields: ["Target", "StageName"] });
-      const _sessionObserver = await ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      const _sessionObserver = await this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
       // check if own session is taken over by another device
       _sessionObserver.on("create", async (wrSess) => await this.checkForCounterpart(wrSess));
       _sessionObserver.on("update", async (wrSess) => await this.checkForCounterpart(wrSess));
@@ -357,7 +354,7 @@ export const useTimerStore = defineStore({
       const query = new Parse.Query(DB.CLASS_EVENT);
       query.equalTo(DB.CLASS_FIELD_OBJECTID, this.user.usertype.eventId);
       query.select([DB.CLASS_ARRAY_REGISTRANTS]);
-      this.starterNumberSubscription = ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      this.starterNumberSubscription = this.parseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
       this.starterNumberSubscription.on("update", (ev) => {
         this.starters = ev.get(DB.CLASS_ARRAY_REGISTRANTS);
@@ -367,6 +364,13 @@ export const useTimerStore = defineStore({
     async initSubscriptions() {
       // init parseClient for LiveQuery
       try {
+        const LiveQueryClient = Parse.LiveQueryClient;
+        this.parseClient = new LiveQueryClient({
+          applicationId: import.meta.env.VITE_APP_PARSE_APP_ID,
+          serverURL: import.meta.env.VITE_APP_PARSE_WSS_URL,
+          javascriptKey: import.meta.env.VITE_APP__PARSE_JAVASCRIPT_ID,
+        });
+        this.parseClient.open();
         // required in each case for session take over by another device
         await this.subscribeToSessionObserver();
         // required in each case for watching manual changes of table entries
