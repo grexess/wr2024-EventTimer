@@ -1,10 +1,14 @@
 import Parse from "parse/dist/parse.min.js";
 
-import { DB } from "../config/config";
+const parseURL = import.meta.env.VITE_APP_PARSE_SERVER_URL;
+const applicationId = import.meta.env.VITE_APP_PARSE_APP_ID;
+const javascriptKey = import.meta.env.VITE_APP_PARSE_JAVASCRIPT_ID;
 
-Parse.serverURL = import.meta.env.VITE_APP_PARSE_SERVER_URL;
-Parse.initialize(import.meta.env.VITE_APP_PARSE_APP_ID, import.meta.env.VITE_APP_PARSE_JAVASCRIPT_ID);
+Parse.serverURL = parseURL;
+Parse.initialize(applicationId, javascriptKey);
 Parse.enableLocalDatastore();
+
+import { DB } from "../config/config";
 
 const findParseObjects = async ({ className, query, select }) => {
   const q = new Parse.Query(className);

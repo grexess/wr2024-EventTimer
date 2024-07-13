@@ -6,6 +6,7 @@ import { router } from "@/scripts/router.js";
 const route = useRoute();
 
 import { useTimerStore } from "@/scripts/stores/index.js";
+import { fi } from "vuetify/locale";
 const timerStore = useTimerStore();
 
 const snackBar = inject("$SnackBar");
@@ -36,6 +37,8 @@ const crudNonConfirmAction = async (crudAction, crudFunction, { obj }) => {
     errorDialogData.text = error.message || error;
     await infoDialog.value.open(errorDialogData);
     handleParseError(error);
+  } finally {
+    loader.close();
   }
 };
 

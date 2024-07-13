@@ -31,6 +31,7 @@ const { sessionTakeOver } = storeToRefs(timerStore);
 
 // watch for session take over by another device
 watch(sessionTakeOver, async (newValue) => {
+  console.log("watch:sessionTakeOver", newValue);
   if (newValue) {
     try {
       await infoDialog.value.open({
@@ -97,7 +98,9 @@ const getTargetLabel = () => {
           </v-list-item>
         </v-list>
       </v-menu>
-
+      <div style="font-size: 0.7em">
+        {{ timerStore.sessionObserverSubscription }}
+      </div>
       <template v-slot:append>
         <v-img :width="35" cover :src="`${imageHost}/logo/wrSymbol_blue_white.png`"></v-img>
       </template>

@@ -9,7 +9,7 @@ const loadingComponent = inject("$LoadingComponent");
 
 const crud = inject("$CRUD");
 
-const pin = ref("");
+const pin = ref("63183");
 
 const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
@@ -26,7 +26,7 @@ const removeDigit = () => {
 };
 
 const clearPin = () => {
-  pin.value = "";
+  pin.value = "63183";
 };
 
 const doLogin = async () => {
@@ -70,8 +70,8 @@ const doLogin = async () => {
       doLogin();
     }
   } finally {
-    console.log("doLogin: finally");
     loader.close();
+    console.log("doLogin: finally");
   }
 };
 </script>

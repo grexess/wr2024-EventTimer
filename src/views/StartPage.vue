@@ -20,7 +20,6 @@ import StopTime from "@/components/startPage/StopTime.vue";
 import ValueInput from "@/components/startPage/ValueInput.vue";
 
 const fetchData = () => {
-  crud.value.crudNonConfirmAction("read", timerStore.initSubscriptions, { obj: "Resultate" });
   crud.value.crudNonConfirmAction("read", timerStore.fetchData, { obj: "Resultate" });
 };
 
@@ -29,18 +28,18 @@ fetchData();
 <template>
   <v-container class="fill-height" style="background-color: #fff; max-width: 470px">
     <div class="container mx-1">
-      <NumberSelection v-if="RESULTKEEPING_MAP.get(timerStore.mode).showSelection" />
+      <NumberSelection v-if="RESULTKEEPING_MAP[timerStore.mode].showSelection" />
       <TransitionGroup name="roll">
-        <StartTime v-if="RESULTKEEPING_MAP.get(timerStore.mode).showStartTimer" @start="openSnackBar"
+        <StartTime v-if="RESULTKEEPING_MAP[timerStore.mode].showStartTimer" @start="openSnackBar"
       /></TransitionGroup>
       <TransitionGroup name="roll">
-        <ResetTime v-if="RESULTKEEPING_MAP.get(timerStore.mode).showResetTimer" @reset="openSnackBar"
+        <ResetTime v-if="RESULTKEEPING_MAP[timerStore.mode].showResetTimer" @reset="openSnackBar"
       /></TransitionGroup>
       <TransitionGroup name="roll">
-        <StopTime v-if="RESULTKEEPING_MAP.get(timerStore.mode).showStopTimer" @stop="openSnackBar"
+        <StopTime v-if="RESULTKEEPING_MAP[timerStore.mode].showStopTimer" @stop="openSnackBar"
       /></TransitionGroup>
       <TransitionGroup name="roll">
-        <ValueInput v-if="RESULTKEEPING_MAP.get(timerStore.mode).isResultKeeping" @save="openSnackBar"
+        <ValueInput v-if="RESULTKEEPING_MAP[timerStore.mode].isResultKeeping" @save="openSnackBar"
       /></TransitionGroup>
     </div>
     <VLayoutItem model-value position="bottom" class="text-end" size="88">
