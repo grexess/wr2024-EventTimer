@@ -386,7 +386,7 @@ export const useTimerStore = defineStore({
     async subscribeToStartNumberObserver() {
       const query = new Parse.Query(DB.CLASS_EVENT);
       query.equalTo(DB.CLASS_FIELD_OBJECTID, this.user.usertype.eventId);
-      // query.select([DB.CLASS_ARRAY_REGISTRANTS]);
+      query.select([DB.CLASS_ARRAY_REGISTRANTS]);
       this.starterNumberSubscription = ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
 
       this.starterNumberSubscription.on("update", (ev) => {
