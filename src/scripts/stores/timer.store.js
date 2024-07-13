@@ -47,7 +47,17 @@ export const useTimerStore = defineStore({
   }),
 
   actions: {
-    initParse() {
+    async initParse() {
+      //try to reset
+      if (ParseClient && ParseClient.state === "connected") {
+        try {
+          await ParseClient.close();
+          console.log("ParseClient.close:done");
+        } catch (error) {
+          console.log("ParseClient.close:error", error);
+        }
+      }
+
       Parse.serverURL = parseURL;
       Parse.initialize(applicationId, javascriptKey);
       Parse.enableLocalDatastore();
@@ -63,7 +73,7 @@ export const useTimerStore = defineStore({
     },
 
     async fetchData() {
-      this.initParse();
+      await this.initParse();
       this.initSubscriptions();
 
       console.log("fetchData:start");
@@ -210,7 +220,7 @@ export const useTimerStore = defineStore({
     },
 
     async login(pin) {
-      this.initParse();
+      await this.initParse();
       try {
         const _user = await Parse.User.logIn(pin, pin);
         this.user = _user.toJSON();
