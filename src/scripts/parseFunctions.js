@@ -70,7 +70,7 @@ const getParseQuery = ({ className, queryData, selectedFields }) => {
   for (const key in queryData) {
     query.equalTo(key, queryData[key]);
   }
-  query.select(selectedFields);
+  // query.select(selectedFields);
   return query;
 };
 
