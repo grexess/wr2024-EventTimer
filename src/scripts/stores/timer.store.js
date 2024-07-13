@@ -466,12 +466,12 @@ export const useTimerStore = defineStore({
       return RESULTKEEPING_MAP[state.mode].showResetTimer && this.getStartNumbersOnStage.length;
     },
 
-    showStopTime(state) {
-      RESULTKEEPING_MAP[state.mode].showStopTime;
+    showStopTimer(state) {
+      return RESULTKEEPING_MAP[state.mode].showStopTimer;
     },
 
     showValueInput() {
-      RESULTKEEPING_MAP[state.mode].showValueInput;
+      return RESULTKEEPING_MAP[state.mode].showValueInput;
     },
 
     showCounterPartWarning() {
