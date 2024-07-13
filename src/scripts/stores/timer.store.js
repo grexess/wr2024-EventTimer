@@ -350,6 +350,7 @@ export const useTimerStore = defineStore({
 
       const query = getParseQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields: ["Target", "StageName"] });
       const _sessionObserver = await ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
+      _sessionObserver.on("error", async (error) => console.log("subscribeToSessionObserver:error", error));
       // check if own session is taken over by another device
       _sessionObserver.on("create", async (wrSess) => {
         try {
