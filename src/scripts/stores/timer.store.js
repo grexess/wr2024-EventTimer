@@ -341,13 +341,29 @@ export const useTimerStore = defineStore({
       const query = getParseQuery({ className: "WR_SESSION_OBSERVER", queryData, selectedFields: ["Target", "StageName"] });
       const _sessionObserver = await ParseClient.subscribe(query, Parse.User.current().get("sessionToken"));
       // check if own session is taken over by another device
-      _sessionObserver.on("create", async (wrSess) => await this.checkForCounterpart(wrSess));
+      _sessionObserver.on("create", async (wrSess) => {
+        try {
+          await this.checkForCounterpart(wrSess);
+        } catch (err) {
+          console.log("subscribeToSessionObserver [create]:error", err);
+        }
+      });
       console.log("subscribeToSessionObserver [create]:done");
-      _sessionObserver.on("update", async (wrSess) => await this.checkForCounterpart(wrSess));
+      _sessionObserver.on("update", async (wrSess) => {
+        try {
+          await this.checkForCounterpart(wrSess);
+        } catch (error) {
+          console.log("subscribeToSessionObserver [update]:error", error);
+        }
+      });
       console.log("subscribeToSessionObserver [update]:done");
       _sessionObserver.on("delete", async (wrSess) => {
-        await this.checkForSessionTakeOver(wrSess); // check if own session is taken over by another device
-        await this.checkForCounterpart(wrSess); // check if counterpart session is deleted
+        try {
+          await this.checkForSessionTakeOver(wrSess); // check if own session is taken over by another device
+          await this.checkForCounterpart(wrSess); // check if counterpart session is deleted
+        } catch (error) {
+          console.log("subscribeToSessionObserver [delete]:error", error);
+        }
       });
       console.log("subscribeToSessionObserver [delete]:done");
       this.sessionObserverSubscription = _sessionObserver;
