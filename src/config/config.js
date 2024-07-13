@@ -56,5 +56,6 @@ const DB = {
 
 const DEV_DEFAULT_MAIL = import.meta.env.DEV ? import.meta.env.VITE_DEV_MAIL : "";
 const DEV_DEFAULT_POPUPNAME = import.meta.env.DEV ? import.meta.env.VITE_DEV_POPUPNAME : "";
+const DEV_LOGIN_PIN = import.meta.env.DEV ? import.meta.env.VITE_DEV_LOGIN_PIN : "";
 
-export { RESULTKEEPING_MAP, DB, DEV_DEFAULT_MAIL, DEV_DEFAULT_POPUPNAME };
+export { RESULTKEEPING_MAP, DB, DEV_DEFAULT_MAIL, DEV_DEFAULT_POPUPNAME, DEV_LOGIN_PIN };

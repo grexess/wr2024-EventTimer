@@ -428,6 +428,26 @@ export const useTimerStore = defineStore({
       return ["MODE_WIDTH", "MODE_POINTS"].includes(this.mode);
     },
 
+    showSelection(state) {
+      return RESULTKEEPING_MAP[state.mode].showSelection;
+    },
+
+    showStartTimer(state) {
+      return RESULTKEEPING_MAP[state.mode].showStartTimer && state.selectedStarter;
+    },
+
+    showResetTimer(state) {
+      return RESULTKEEPING_MAP[state.mode].showResetTimer && this.getStartNumbersOnStage.length;
+    },
+
+    showStopTime(state) {
+      RESULTKEEPING_MAP[state.mode].showStopTime;
+    },
+
+    showValueInput() {
+      RESULTKEEPING_MAP[state.mode].showValueInput;
+    },
+
     showCounterPartWarning() {
       return RESULTKEEPING_MAP[this.mode].requireCounterpartSubscription && !this.isCounterPartAvailable;
     },

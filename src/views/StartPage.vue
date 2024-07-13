@@ -28,19 +28,11 @@ fetchData();
 <template>
   <v-container class="fill-height" style="background-color: #fff; max-width: 470px">
     <div class="container mx-1">
-      <NumberSelection v-if="RESULTKEEPING_MAP[timerStore.mode].showSelection" />
-      <TransitionGroup name="roll">
-        <StartTime v-if="RESULTKEEPING_MAP[timerStore.mode].showStartTimer" @start="openSnackBar"
-      /></TransitionGroup>
-      <TransitionGroup name="roll">
-        <ResetTime v-if="RESULTKEEPING_MAP[timerStore.mode].showResetTimer" @reset="openSnackBar"
-      /></TransitionGroup>
-      <TransitionGroup name="roll">
-        <StopTime v-if="RESULTKEEPING_MAP[timerStore.mode].showStopTimer" @stop="openSnackBar"
-      /></TransitionGroup>
-      <TransitionGroup name="roll">
-        <ValueInput v-if="RESULTKEEPING_MAP[timerStore.mode].isResultKeeping" @save="openSnackBar"
-      /></TransitionGroup>
+      <NumberSelection v-if="timerStore.showSelection" />
+      <TransitionGroup name="roll"> <StartTime v-if="timerStore.showStartTimer" @start="openSnackBar" /></TransitionGroup>
+      <TransitionGroup name="roll"> <ResetTime v-if="timerStore.showResetTimer" @reset="openSnackBar" /></TransitionGroup>
+      <TransitionGroup name="roll"> <StopTime v-if="timerStore.showStopTimer" @stop="openSnackBar" /></TransitionGroup>
+      <TransitionGroup name="roll"> <ValueInput v-if="timerStore.isResultKeeping" @save="openSnackBar" /></TransitionGroup>
     </div>
     <VLayoutItem model-value position="bottom" class="text-end" size="88">
       <div class="ma-4">

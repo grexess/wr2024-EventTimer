@@ -3,13 +3,15 @@ import { ref, inject } from "vue";
 import { useTimerStore } from "@/scripts/stores/index.js";
 const timerStore = useTimerStore();
 
+import { DEV_LOGIN_PIN } from "@/config/config.js";
+
 const infoDialog = inject("$InfoDialog");
 const confirmDialog = inject("$ConfirmDialog");
 const loadingComponent = inject("$LoadingComponent");
 
 const crud = inject("$CRUD");
 
-const pin = ref("63183");
+const pin = ref(DEV_LOGIN_PIN);
 
 const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
@@ -26,7 +28,7 @@ const removeDigit = () => {
 };
 
 const clearPin = () => {
-  pin.value = "63183";
+  pin.value = DEV_LOGIN_PIN;
 };
 
 const doLogin = async () => {

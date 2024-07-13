@@ -98,9 +98,6 @@ const getTargetLabel = () => {
           </v-list-item>
         </v-list>
       </v-menu>
-      <div style="font-size: 0.7em">
-        {{ timerStore.sessionObserverSubscription }}
-      </div>
       <template v-slot:append>
         <v-img :width="35" cover :src="`${imageHost}/logo/wrSymbol_blue_white.png`"></v-img>
       </template>
