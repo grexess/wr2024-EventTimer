@@ -3,8 +3,6 @@ import { inject } from "vue";
 import { useTimerStore } from "@/scripts/stores/index.js";
 const timerStore = useTimerStore();
 
-import { RESULTKEEPING_MAP } from "@/config/config.js";
-
 const snackBar = inject("$SnackBar");
 
 const crud = inject("$CRUD");
@@ -19,7 +17,7 @@ import ResetTime from "@/components/startPage/ResetTime.vue";
 import StopTime from "@/components/startPage/StopTime.vue";
 import ValueInput from "@/components/startPage/ValueInput.vue";
 
-import ApplePage from "../components/startPage/ApplePage.vue";
+// import ApplePage from "../components/startPage/ApplePage.vue";
 
 const fetchData = () => {
   crud.value.crudNonConfirmAction("read", timerStore.fetchData, { obj: "Resultate" });
@@ -30,7 +28,7 @@ fetchData();
 <template>
   <v-container class="fill-height" style="background-color: #fff; max-width: 470px">
     <div class="container mx-1">
-      <ApplePage />
+      <!-- <ApplePage /> -->
       <NumberSelection v-if="timerStore.showSelection" />
       <TransitionGroup name="roll"> <StartTime v-if="timerStore.showStartTimer" @start="openSnackBar" /></TransitionGroup>
       <TransitionGroup name="roll"> <ResetTime v-if="timerStore.showResetTimer" @reset="openSnackBar" /></TransitionGroup>
