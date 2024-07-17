@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "TEST-DEPLOY" ]
+    branches: [ "DEPLOY-TO-PROD" ]
   pull_request:
-    branches: [ "TEST-DEPLOY" ]
+    branches: [ "DEPLOY-TO-PROD" ]
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: TEST-DEPLOY
+        ref: DEPLOY-TO-PROD
     - name: install node
       uses: actions/setup-node@v4
       with:
@@ -43,9 +43,9 @@ jobs:
       with:
         source_file: 'dist/'
         destination_repo: 'Team-WeRace/WR-CloudFunctions'
-        destination_branch: 'TEST-DEPLOY'
+        destination_branch: 'DEPLOY-TO-PROD'
         destination_folder: 'public/timer/'
-        user_email: 'kopfan@posteo.de'
-        user_name: 'kopfan'
+        user_email: 'tecuser@werace.de'
+        user_name: 'tecuser@werace.de'
         commit_message: 'deployment pipeline from WR-Timer'
         use_rsync: true
