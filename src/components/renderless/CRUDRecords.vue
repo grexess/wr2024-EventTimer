@@ -1,13 +1,7 @@
 <script setup>
 import { inject } from "vue";
 import Parse from "parse/dist/parse.min.js";
-import { useRoute } from "vue-router";
 import { router } from "@/scripts/router.js";
-const route = useRoute();
-
-import { useTimerStore } from "@/scripts/stores/index.js";
-import { fi } from "vuetify/locale";
-const timerStore = useTimerStore();
 
 const snackBar = inject("$SnackBar");
 const infoDialog = inject("$InfoDialog");

@@ -39,14 +39,36 @@ const decrement = () => {
   input.value = String(newVal - 1);
 };
 
+// const saveResult = async () => {
+//   const loader = loadingComponent.value;
+//   try {
+//     loader.open();
+//     const inpVal = parseFloat(input.value);
+//     const result = isWidthMode.value ? inpVal * factor.value : inpVal;
+//     await timerStore.saveResult(result);
+//     emit("save", { text: `Ergebnis gespeichert` });
+//   } catch (error) {
+//     await infoDialog.value.open({
+//       title: "Starter - Resultatseingabe",
+//       text: error.message || error,
+//       color: "red",
+//     });
+//   } finally {
+//     input.value = "0";
+//     loader.close();
+//   }
+// };
 const saveResult = async () => {
-  const loader = loadingComponent.value;
+  const sn = timerStore.selectedStarter;
   try {
-    loader.open();
+    timerStore.progressItems.push({ sn, result: input.value, date: Date.now() });
     const inpVal = parseFloat(input.value);
+    // reset the input an starter
+    input.value = "0";
+    timerStore.selectedStarter = null;
     const result = isWidthMode.value ? inpVal * factor.value : inpVal;
-    await timerStore.saveResult(result);
-    emit("save", { text: `Ergebnis gespeichert` });
+    await timerStore.saveResult({ sn, result });
+    // emit("save", { text: `Ergebnis gespeichert` });
   } catch (error) {
     await infoDialog.value.open({
       title: "Starter - Resultatseingabe",
@@ -54,8 +76,7 @@ const saveResult = async () => {
       color: "red",
     });
   } finally {
-    input.value = "0";
-    loader.close();
+    timerStore.progressItems.splice(timerStore.progressItems.indexOf(sn), 1, { sn, solved: Date.now() });
   }
 };
 

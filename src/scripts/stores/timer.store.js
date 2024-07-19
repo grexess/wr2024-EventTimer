@@ -44,6 +44,7 @@ export const useTimerStore = defineStore({
     timeTableSubscription: null,
     starterNumberSubscription: null,
     sessionTakeOver: false,
+    progressItems: [],
   }),
 
   actions: {
@@ -115,6 +116,7 @@ export const useTimerStore = defineStore({
 
         this.starterOnStage = {};
         this.finishedStarter = {};
+        this.progressItems = [];
 
         // TODO only for timekeeper
         for (const cur of entries) {
@@ -173,7 +175,7 @@ export const useTimerStore = defineStore({
       this.selectedStarter = null;
     },
 
-    async saveResult(result) {
+    async saveResult({ sn, result }) {
       let idField;
       switch (this.user.usertype.type) {
         case "popup":
@@ -188,14 +190,12 @@ export const useTimerStore = defineStore({
 
       await createParseObject(this.classNameMap[this.user.usertype.type].timeTableClass, {
         [idField]: this.user.usertype[this.getUserTypeEvent],
-        [DB.CLASS_FIELD_STARTNUMBER]: this.selectedStarter,
+        [DB.CLASS_FIELD_STARTNUMBER]: sn,
         [DB.CLASS_FIELD_RESULT]: result,
         [DB.CLASS_FIELD_STAGE]: this.user.usertype.stageName, // only for event
       });
 
       await this.fetchData(); // reload starter data
-
-      this.selectedStarter = null;
     },
 
     removeSelectedStarter() {

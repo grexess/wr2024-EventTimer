@@ -3,5 +3,5 @@ dist
 
 logs
 *.log
-
+.env.development.local
 privateREADME.md
